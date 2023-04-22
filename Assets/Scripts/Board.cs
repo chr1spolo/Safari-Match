@@ -41,8 +41,8 @@ public class Board : MonoBehaviour
             for (int y = 0; y < height; y++)
             {
                 var o = Instantiate(tileObject, new Vector3(x, y, -5), Quaternion.identity);
-
                 o.transform.parent = transform;
+                o.GetComponent<Tile>()?.Setup(x, y, this);
             }
         }
     }
