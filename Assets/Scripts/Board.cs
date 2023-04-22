@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,10 +11,27 @@ public class Board : MonoBehaviour
 
     public GameObject tileObject;
 
+    public int CameraSizeOffset;
+    public int CameraVerticalOffset;
+
     // Start is called before the first frame update
     void Start()
     {
         SetupBoard();
+        PositionCamera();
+    }
+
+    private void PositionCamera()
+    {
+        float newPosX = (float)width / 2f;
+        float newPosY = (float)height / 2f;
+
+        Camera.main.transform.position = new Vector3(newPosX - 0.5f, newPosY - 0.5f + CameraVerticalOffset, -10);
+
+        float horizontal = width + 0.5f;
+        float vertical = (height / 2) + 0.5f;
+
+        Camera.main.orthographicSize = horizontal > vertical ? horizontal + CameraSizeOffset : vertical;
     }
 
     private void SetupBoard() 
