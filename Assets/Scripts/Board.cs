@@ -23,6 +23,8 @@ public class Board : MonoBehaviour
     Tile startTile;
     Tile endTile;
 
+    bool swappingPieces = false;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -94,25 +96,58 @@ public class Board : MonoBehaviour
 
         if (startTile != null && endTile != null && checkMove)
         {
-            SwapTiles();
+            StartCoroutine(SwapTiles());
         }
 
-        startTile = null;
-        endTile = null;
     }
 
-    public void SwapTiles()
+    IEnumerator SwapTiles()
     {
         var startPiece = Pieces[startTile.x, startTile.y];
         var endPiece = Pieces[endTile.x, endTile.y];
 
-        startPiece.Move(endPiece.x, endPiece.y);
-        endPiece.Move(startPiece.x, startPiece.y);
+        startPiece.Move(endTile.x, endTile.y);
+        endPiece.Move(startTile.x, startTile.y);
 
 
         Pieces[startTile.x, startTile.y] = endPiece;
         Pieces[endTile.x, endTile.y] = startPiece;
 
+        yield return new WaitForSeconds(0.6f);
+
+        bool foundMatch = false;
+        var startMatches = GetMatchByPiece(startTile.x, startTile.y, 3);
+        var endMatches = GetMatchByPiece(endTile.x, endTile.y, 3);
+
+        startMatches.ForEach(piece =>
+        {
+            foundMatch = true;
+            Pieces[piece.x, piece.y] = null;
+            Destroy(piece.gameObject);
+        });
+
+        endMatches.ForEach(piece =>
+        {
+            foundMatch = true;
+            Pieces[piece.x, piece.y] = null;
+            Destroy(piece.gameObject);
+        });
+
+        if (!foundMatch)
+        {
+            startPiece.Move(startTile.x, startTile.y);
+            endPiece.Move(endTile.x, endTile.y);
+
+
+            Pieces[endTile.x, endTile.y] = endPiece;
+            Pieces[startTile.x, startTile.y] = startPiece;
+        }
+
+        startTile = null;
+        endTile = null;
+        swappingPieces = false;
+
+        yield return null;
     }
 
     public bool IsCloseTo(Tile start, Tile end)
@@ -130,7 +165,7 @@ public class Board : MonoBehaviour
 
     public List<Piece> GetMatchByDirection(int xpos, int ypos, Vector2 direction, int minPieces = 3)
     {
-        List<Piece> matches = new();
+        List<Piece> matches = new List<Piece>();
         Piece startPiece = Pieces[xpos, ypos];
         matches.Add(startPiece);
 
@@ -141,12 +176,11 @@ public class Board : MonoBehaviour
         for (int i = 1; i < maxVal; i++)
         {
             nextX = xpos + ((int)direction.x * i);
-            nextY = ypos * ((int)direction.y * i);
+            nextY = ypos + ((int)direction.y * i);
 
-            if (nextX >= 0 && nextX < width && nextY >= 0 && nextY > height)
+            if (nextX >= 0 && nextX < width && nextY >= 0 && nextY < height)
             {
                 var nextPiece = Pieces[nextX, nextY];
-
                 if (nextPiece != null && nextPiece.pieceType == startPiece.pieceType)
                 {
                     matches.Add(nextPiece);
