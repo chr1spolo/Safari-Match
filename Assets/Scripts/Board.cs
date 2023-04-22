@@ -88,7 +88,10 @@ public class Board : MonoBehaviour
 
     public void TileUp(Tile tile_)
     {
-        if(startTile != null && endTile != null)
+
+        var checkMove = IsCloseTo(startTile, endTile);
+
+        if (startTile != null && endTile != null && checkMove)
         {
             SwapTiles();
         }
@@ -105,7 +108,22 @@ public class Board : MonoBehaviour
         startPiece.Move(endPiece.x, endPiece.y);
         endPiece.Move(startPiece.x, startPiece.y);
 
+
         Pieces[startTile.x, startTile.y] = endPiece;
         Pieces[endTile.x, endTile.y] = startPiece;
+
+    }
+
+    public bool IsCloseTo(Tile start, Tile end)
+    {
+        if(
+            Math.Abs(start.x-end.x) == 1 && start.y == end.y ||
+            Math.Abs(start.y - end.y) == 1 && start.x == end.x
+         )
+        {
+            return true;
+        }
+
+        return false;
     }
 }
