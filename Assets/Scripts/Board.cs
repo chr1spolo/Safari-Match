@@ -19,8 +19,8 @@ public class Board : MonoBehaviour
     Tile[,] Tiles;
     Piece[,] Pieces;
 
-    Tile startTile;
-    Tile endTile;
+    Tile startTile = null;
+    Tile endTile = null;
 
     bool swappingPieces = false;
 
@@ -107,19 +107,29 @@ public class Board : MonoBehaviour
 
     public void TileDown(Tile tile_)
     {
-        startTile = tile_;
+        if (!swappingPieces)
+        {
+            startTile = tile_;
+        }
     }
 
     public void TileOver(Tile tile_)
     {
-        endTile = tile_;
+        if (!swappingPieces)
+        {
+            endTile = tile_;
+        }
     }
 
     public void TileUp(Tile tile_)
     {
         if (startTile != null && endTile != null && IsCloseTo(startTile, endTile))
         {
-            StartCoroutine(SwapTiles());
+            if (Pieces[endTile.x, endTile.y] != null && !swappingPieces)
+            {
+                swappingPieces = true;
+                StartCoroutine(SwapTiles());
+            }
         }
     }
 
@@ -136,7 +146,6 @@ public class Board : MonoBehaviour
 
         yield return new WaitForSeconds(0.6f);
 
-        bool foundMatch = false;
         var startMatches = GetMatchByPiece(startTile.x, startTile.y, 3);
         var endMatches = GetMatchByPiece(endTile.x, endTile.y, 3);
 

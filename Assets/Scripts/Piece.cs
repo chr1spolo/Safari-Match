@@ -30,7 +30,7 @@ public class Piece : MonoBehaviour
 
     public void Move(int destX, int destY)
     {
-        transform.DOMove(new Vector3(destX, destY, -5), 0.6f).SetEase(Ease.InOutCubic).onComplete = () =>
+        transform.DOMove(new Vector3(destX, destY, -5), 0.4f).SetEase(Ease.InOutCubic).onComplete = () =>
         {
             x = destX;
             y = destY;
