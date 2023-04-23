@@ -38,8 +38,8 @@ public class Board : MonoBehaviour
 
     private void SetupPieces()
     {
-        int maxIterations = 50;
-        int currentIteration = 0;
+        int maxIterations = 10;
+        int currentIteration;
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
@@ -178,6 +178,37 @@ public class Board : MonoBehaviour
         });
         List<int> columns = GetColumns(piecesToClear);
         List<Piece> collapsedPieces = collapseColumns(columns, 0.3f);
+
+        FindMatchesRecursively(collapsedPieces);
+    }
+
+    private void FindMatchesRecursively(List<Piece> collapsedPieces)
+    {
+        StartCoroutine(FindMatchesRecursivelyCoroutine(collapsedPieces));
+    }
+
+    IEnumerator FindMatchesRecursivelyCoroutine(List<Piece> collapsedPieces)
+    {
+        yield return new WaitForSeconds(1f);
+
+        List<Piece> newMatches = new List<Piece>();
+        collapsedPieces.ForEach(piece =>
+        {
+            var matches = GetMatchByPiece(piece.x, piece.y, 3);
+
+            if (matches != null)
+            {
+                newMatches = newMatches.Union(matches).ToList();
+                ClearPieces(newMatches);
+            }
+        });
+
+        if (newMatches.Count > 0)
+        {
+            var newCollapsePieces = collapseColumns(GetColumns(newMatches), 0.3f);
+            FindMatchesRecursively(newCollapsePieces);
+        }
+        yield return null;
     }
 
     private List<int> GetColumns(List<Piece> piecesToClear)
