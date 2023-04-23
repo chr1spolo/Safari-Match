@@ -37,9 +37,23 @@ public class Piece : MonoBehaviour
         };
     }
 
+    public void DissapearPiece()
+    {
+        transform.DOScale(new Vector3(1.3f, 1.3f, 1.3f), 0.4f).onComplete = () =>
+        {
+            Destroy(gameObject);
+        };
+    }
+
     [ContextMenu("Test Move")]
     public void MoveTest()
     {
         Move(0, 0);
+    }
+
+    [ContextMenu("Dissapear")]
+    public void DissapearPieceTest()
+    {
+        DissapearPiece();
     }
 }

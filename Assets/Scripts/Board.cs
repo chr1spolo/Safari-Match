@@ -63,7 +63,8 @@ public class Board : MonoBehaviour
     private void ClearPieceAt(int x, int y)
     {
         var pieceToClear = Pieces[x, y];
-        Destroy(pieceToClear.gameObject);
+        // Destroy(pieceToClear.gameObject);
+        pieceToClear.DissapearPiece();
         Pieces[x, y] = null;
     }
 
