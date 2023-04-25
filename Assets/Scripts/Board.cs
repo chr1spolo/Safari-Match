@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class Board : MonoBehaviour
 {
-
+    public float timeBetweenPieces = 0.05f;
     public int width;
     public int height;
     public GameObject tileObject;
@@ -33,10 +33,10 @@ public class Board : MonoBehaviour
 
         SetupBoard();
         PositionCamera();
-        SetupPieces();
+        StartCoroutine(SetupPieces());
     }
 
-    private void SetupPieces()
+    private IEnumerator SetupPieces()
     {
         int maxIterations = 10;
         int currentIteration;
@@ -44,20 +44,27 @@ public class Board : MonoBehaviour
         {
             for (int y = 0; y < height; y++)
             {
-                currentIteration = 0;
-                var newPiece = CreatePieceAt(x, y);
-                while (HasPreviousMatches(x, y))
+                yield return new WaitForSeconds(timeBetweenPieces);
+
+                if (Pieces[x,y] == null)
                 {
-                    ClearPieceAt(x, y);
-                    newPiece = CreatePieceAt(x, y);
-                    currentIteration++;
-                    if (currentIteration > maxIterations)
+                    currentIteration = 0;
+                    var newPiece = CreatePieceAt(x, y);
+                    while (HasPreviousMatches(x, y))
                     {
-                        break;
+                        ClearPieceAt(x, y);
+                        newPiece = CreatePieceAt(x, y);
+                        currentIteration++;
+                        if (currentIteration > maxIterations)
+                        {
+                            break;
+                        }
                     }
                 }
             }
         }
+
+        yield return null;
     }
 
     private void ClearPieceAt(int x, int y)
@@ -124,18 +131,21 @@ public class Board : MonoBehaviour
 
     public void TileUp(Tile tile_)
     {
-        if (startTile != null && endTile != null && IsCloseTo(startTile, endTile))
+        if (!swappingPieces)
         {
-            if (Pieces[endTile.x, endTile.y] != null && !swappingPieces)
-            {
-                swappingPieces = true;
-                StartCoroutine(SwapTiles());
-            }
+           if (startTile != null && endTile != null && IsCloseTo(startTile, endTile))
+           {
+                if (Pieces[endTile.x, endTile.y] != null)
+                {
+                    StartCoroutine(SwapTiles());
+                }
+           }
         }
     }
 
     IEnumerator SwapTiles()
     {
+        swappingPieces = true;
         var StarPiece = Pieces[startTile.x, startTile.y];
         var EndPiece = Pieces[endTile.x, endTile.y];
 
@@ -208,6 +218,12 @@ public class Board : MonoBehaviour
         {
             var newCollapsePieces = collapseColumns(GetColumns(newMatches), 0.3f);
             FindMatchesRecursively(newCollapsePieces);
+        }
+        else
+        {
+            yield return new WaitForSeconds(0.1f);
+            StartCoroutine(SetupPieces());
+            swappingPieces = false;
         }
         yield return null;
     }
