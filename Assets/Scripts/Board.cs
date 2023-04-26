@@ -52,11 +52,11 @@ public class Board : MonoBehaviour
                 if (Pieces[x,y] == null)
                 {
                     currentIteration = 0;
-                    var newPiece = CreatePieceAt(x, y);
+                    CreatePieceAt(x, y);
                     while (HasPreviousMatches(x, y))
                     {
                         ClearPieceAt(x, y);
-                        newPiece = CreatePieceAt(x, y);
+                        CreatePieceAt(x, y);
                         currentIteration++;
                         if (currentIteration > maxIterations)
                         {
@@ -372,7 +372,15 @@ public class Board : MonoBehaviour
 
     public void AwardPoints(List<Piece> allMatches)
     {
-        GameManager.Instace.AddPoint(allMatches.Count * PointsPerMatch);
+        int poinst = 0;
+        foreach (var piece in allMatches)
+        {
+            poinst += piece.valuePerMatch;
+        }
+
+        Debug.Log(poinst);
+
+        GameManager.Instace.AddPoint(poinst);
     }
 
 }
