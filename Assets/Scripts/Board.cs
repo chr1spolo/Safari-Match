@@ -15,6 +15,7 @@ public class Board : MonoBehaviour
     public float cameraVerticalOffset;
 
     public GameObject[] availablePieces;
+    public int PointsPerMatch;
 
     Tile[,] Tiles;
     Piece[,] Pieces;
@@ -175,6 +176,7 @@ public class Board : MonoBehaviour
         else
         {
             ClearPieces(allMatches);
+            AwardPoints(allMatches);
         }
 
         startTile = null;
@@ -203,7 +205,7 @@ public class Board : MonoBehaviour
 
     IEnumerator FindMatchesRecursivelyCoroutine(List<Piece> collapsedPieces)
     {
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.7f);
 
         List<Piece> newMatches = new List<Piece>();
         collapsedPieces.ForEach(piece =>
@@ -213,7 +215,8 @@ public class Board : MonoBehaviour
             if (matches != null)
             {
                 newMatches = newMatches.Union(matches).ToList();
-                ClearPieces(newMatches);
+                ClearPieces(matches);
+                AwardPoints(matches);
             }
         });
 
@@ -365,6 +368,11 @@ public class Board : MonoBehaviour
         }
 
         return foundMatches;
+    }
+
+    public void AwardPoints(List<Piece> allMatches)
+    {
+        GameManager.Instace.AddPoint(allMatches.Count * PointsPerMatch);
     }
 
 }
