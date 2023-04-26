@@ -26,6 +26,9 @@ public class Piece : MonoBehaviour
         x = x_;
         y = y_;
         board = board_;
+
+        transform.localScale = Vector3.one * 0.35f;
+        transform.DOScale(Vector3.one, 0.35f);
     }
 
     public void Move(int destX, int destY)
@@ -37,12 +40,23 @@ public class Piece : MonoBehaviour
         };
     }
 
-    public void DissapearPiece()
+    public void DissapearPiece(bool animated)
     {
-        transform.DOScale(new Vector3(1.3f, 1.3f, 1.3f), 0.4f).onComplete = () =>
+        if (animated)
+        {
+            transform.DORotate(new Vector3(0, 0, -120f), 0.12f);
+            transform.DOScale(new Vector3(1.3f, 1.3f, 1.3f), 0.4f).onComplete = () =>
+            {
+                transform.DOScale(Vector3.zero, 0.1f).onComplete = () =>
+                {
+                    Destroy(gameObject);
+                };
+            };
+        }
+        else
         {
             Destroy(gameObject);
-        };
+        }
     }
 
     [ContextMenu("Test Move")]
@@ -54,6 +68,6 @@ public class Piece : MonoBehaviour
     [ContextMenu("Dissapear")]
     public void DissapearPieceTest()
     {
-        DissapearPiece();
+        DissapearPiece(true);
     }
 }

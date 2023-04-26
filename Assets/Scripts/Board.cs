@@ -34,10 +34,12 @@ public class Board : MonoBehaviour
         SetupBoard();
         PositionCamera();
         StartCoroutine(SetupPieces());
+        swappingPieces = false;
     }
 
     private IEnumerator SetupPieces()
     {
+        swappingPieces = true;
         int maxIterations = 10;
         int currentIteration;
         for (int x = 0; x < width; x++)
@@ -71,17 +73,18 @@ public class Board : MonoBehaviour
     {
         var pieceToClear = Pieces[x, y];
         // Destroy(pieceToClear.gameObject);
-        pieceToClear.DissapearPiece();
+        pieceToClear.DissapearPiece(true);
         Pieces[x, y] = null;
     }
 
     private Piece CreatePieceAt(int x, int y)
     {
         var selectedPiece = availablePieces[UnityEngine.Random.Range(0, availablePieces.Length)];
-        var o = Instantiate(selectedPiece, new Vector3(x, y, -5), Quaternion.identity);
+        var o = Instantiate(selectedPiece, new Vector3(x, y + 1, -5), Quaternion.identity);
         o.transform.parent = transform;
         Pieces[x, y] = o.GetComponent<Piece>();
         Pieces[x, y].Setup(x, y, this);
+        Pieces[x, y].Move(x, y);
         return Pieces[x, y];
     }
 
