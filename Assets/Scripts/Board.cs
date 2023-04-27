@@ -7,6 +7,7 @@ using UnityEngine;
 public class Board : MonoBehaviour
 {
     public float timeBetweenPieces = 0.05f;
+
     public int width;
     public int height;
     public GameObject tileObject;
@@ -14,14 +15,15 @@ public class Board : MonoBehaviour
     public float cameraSizeOffset;
     public float cameraVerticalOffset;
 
-    public GameObject[] availablePieces;
     public int PointsPerMatch;
+
+    public GameObject[] availablePieces;
 
     Tile[,] Tiles;
     Piece[,] Pieces;
 
-    Tile startTile = null;
-    Tile endTile = null;
+    Tile startTile;
+    Tile endTile;
 
     bool swappingPieces = false;
 
@@ -34,30 +36,49 @@ public class Board : MonoBehaviour
 
         SetupBoard();
         PositionCamera();
-        StartCoroutine(SetupPieces());
-        swappingPieces = false;
-        GameManager.Instace.gameState = GameManager.GameState.InGame;
+
+        if (GameManager.Instance.gameState == GameManager.GameState.InGame)
+        {
+            StartCoroutine(SetupPieces());
+        }
+        GameManager.Instance.OnGameStateUpdated.AddListener(OnGameStateUpdated);
+    }
+
+    private void OnDestroy()
+    {
+        GameManager.Instance.OnGameStateUpdated.RemoveListener(OnGameStateUpdated);
+    }
+
+    private void OnGameStateUpdated(GameManager.GameState newState)
+    {
+        Debug.Log(newState);
+        if (newState == GameManager.GameState.InGame)
+        {
+            StartCoroutine(SetupPieces());
+        }
+        if (newState == GameManager.GameState.GameOver)
+        {
+            ClearAllPieces();
+        }
     }
 
     private IEnumerator SetupPieces()
     {
-        swappingPieces = true;
-        int maxIterations = 10;
-        int currentIteration;
+        int maxIterations = 50;
+        int currentIteration = 0;
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
                 yield return new WaitForSeconds(timeBetweenPieces);
-
-                if (Pieces[x,y] == null)
+                if (Pieces[x, y] == null)
                 {
                     currentIteration = 0;
-                    CreatePieceAt(x, y);
+                    var newPiece = CreatePieceAt(x, y);
                     while (HasPreviousMatches(x, y))
                     {
                         ClearPieceAt(x, y);
-                        CreatePieceAt(x, y);
+                        newPiece = CreatePieceAt(x, y);
                         currentIteration++;
                         if (currentIteration > maxIterations)
                         {
@@ -67,16 +88,28 @@ public class Board : MonoBehaviour
                 }
             }
         }
-
         yield return null;
     }
 
     private void ClearPieceAt(int x, int y)
     {
         var pieceToClear = Pieces[x, y];
-        // Destroy(pieceToClear.gameObject);
-        pieceToClear.DissapearPiece(true);
+        if (pieceToClear != null)
+        {
+            pieceToClear.DissapearPiece(true);
+        }
         Pieces[x, y] = null;
+    }
+
+    private void ClearAllPieces()
+    {
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                ClearPieceAt(x, y);
+            }
+        }
     }
 
     private Piece CreatePieceAt(int x, int y)
@@ -120,7 +153,7 @@ public class Board : MonoBehaviour
 
     public void TileDown(Tile tile_)
     {
-        if (!swappingPieces && GameManager.Instace.gameState == GameManager.GameState.InGame)
+        if (!swappingPieces && GameManager.Instance.gameState == GameManager.GameState.InGame)
         {
             startTile = tile_;
         }
@@ -128,7 +161,7 @@ public class Board : MonoBehaviour
 
     public void TileOver(Tile tile_)
     {
-        if (!swappingPieces && GameManager.Instace.gameState == GameManager.GameState.InGame)
+        if (!swappingPieces && GameManager.Instance.gameState == GameManager.GameState.InGame)
         {
             endTile = tile_;
         }
@@ -136,15 +169,12 @@ public class Board : MonoBehaviour
 
     public void TileUp(Tile tile_)
     {
-        if (!swappingPieces && GameManager.Instace.gameState == GameManager.GameState.InGame)
+        if (!swappingPieces && GameManager.Instance.gameState == GameManager.GameState.InGame)
         {
-           if (startTile != null && endTile != null && IsCloseTo(startTile, endTile))
-           {
-                if (Pieces[endTile.x, endTile.y] != null)
-                {
-                    StartCoroutine(SwapTiles());
-                }
-           }
+            if (startTile != null && endTile != null && IsCloseTo(startTile, endTile))
+            {
+                StartCoroutine(SwapTiles());
+            }
         }
     }
 
@@ -154,6 +184,7 @@ public class Board : MonoBehaviour
         var StarPiece = Pieces[startTile.x, startTile.y];
         var EndPiece = Pieces[endTile.x, endTile.y];
 
+        AudioManager.Instance.Move();
         StarPiece.Move(endTile.x, endTile.y);
         EndPiece.Move(startTile.x, startTile.y);
 
@@ -165,10 +196,13 @@ public class Board : MonoBehaviour
         var startMatches = GetMatchByPiece(startTile.x, startTile.y, 3);
         var endMatches = GetMatchByPiece(endTile.x, endTile.y, 3);
 
+
         var allMatches = startMatches.Union(endMatches).ToList();
+
 
         if (allMatches.Count == 0)
         {
+            AudioManager.Instance.Miss();
             StarPiece.Move(startTile.x, startTile.y);
             EndPiece.Move(endTile.x, endTile.y);
             Pieces[startTile.x, startTile.y] = StarPiece;
@@ -195,24 +229,21 @@ public class Board : MonoBehaviour
         });
         List<int> columns = GetColumns(piecesToClear);
         List<Piece> collapsedPieces = collapseColumns(columns, 0.3f);
-
-        FindMatchesRecursively(collapsedPieces);
+        FindMatchsRecursively(collapsedPieces);
     }
 
-    private void FindMatchesRecursively(List<Piece> collapsedPieces)
+    private void FindMatchsRecursively(List<Piece> collapsedPieces)
     {
-        StartCoroutine(FindMatchesRecursivelyCoroutine(collapsedPieces));
+        StartCoroutine(FindMatchsRecursivelyCoroutine(collapsedPieces));
     }
 
-    IEnumerator FindMatchesRecursivelyCoroutine(List<Piece> collapsedPieces)
+    IEnumerator FindMatchsRecursivelyCoroutine(List<Piece> collapsedPieces)
     {
-        yield return new WaitForSeconds(0.7f);
-
+        yield return new WaitForSeconds(1f);
         List<Piece> newMatches = new List<Piece>();
         collapsedPieces.ForEach(piece =>
         {
             var matches = GetMatchByPiece(piece.x, piece.y, 3);
-
             if (matches != null)
             {
                 newMatches = newMatches.Union(matches).ToList();
@@ -220,11 +251,10 @@ public class Board : MonoBehaviour
                 AwardPoints(matches);
             }
         });
-
         if (newMatches.Count > 0)
         {
-            var newCollapsePieces = collapseColumns(GetColumns(newMatches), 0.3f);
-            FindMatchesRecursively(newCollapsePieces);
+            var newCollapsedPieces = collapseColumns(GetColumns(newMatches), 0.3f);
+            FindMatchsRecursively(newCollapsedPieces);
         }
         else
         {
@@ -280,6 +310,7 @@ public class Board : MonoBehaviour
         }
         return movingPieces;
     }
+
 
     public bool IsCloseTo(Tile start, Tile end)
     {
@@ -373,15 +404,7 @@ public class Board : MonoBehaviour
 
     public void AwardPoints(List<Piece> allMatches)
     {
-        int poinst = 0;
-        foreach (var piece in allMatches)
-        {
-            poinst += piece.valuePerMatch;
-        }
-
-        Debug.Log(poinst);
-
-        GameManager.Instace.AddPoint(poinst);
+        GameManager.Instance.AddPoints(allMatches.Count * PointsPerMatch);
     }
 
 }

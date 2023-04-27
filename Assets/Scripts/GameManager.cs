@@ -5,7 +5,7 @@ using UnityEngine.Events;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instace;
+    public static GameManager Instance;
 
     public float timeToMatch = 10f;
     public float currentTimeToMatch = 0;
@@ -16,24 +16,25 @@ public class GameManager : MonoBehaviour
         InGame,
         GameOver
     }
+
     public GameState gameState;
 
     public int Points = 0;
-    public UnityEvent OnPointsUpdate;
-    public UnityEvent<GameState> OnGameStateUpdate;
+    public UnityEvent OnPointsUpdated;
+    public UnityEvent<GameState> OnGameStateUpdated;
+
 
     private void Awake()
     {
-        if (Instace == null)
+        if (Instance == null)
         {
-            Instace = this;
+            Instance = this;
         }
         else
         {
             Destroy(gameObject);
         }
     }
-
 
     private void Update()
     {
@@ -43,16 +44,15 @@ public class GameManager : MonoBehaviour
             if (currentTimeToMatch > timeToMatch)
             {
                 gameState = GameState.GameOver;
-                OnGameStateUpdate?.Invoke(gameState);
+                OnGameStateUpdated?.Invoke(gameState);
             }
         }
     }
 
-
-    public void AddPoint(int newPoints)
+    public void AddPoints(int newPoints)
     {
         Points += newPoints;
-        OnPointsUpdate?.Invoke();
+        OnPointsUpdated?.Invoke();
         currentTimeToMatch = 0;
     }
 
@@ -60,7 +60,7 @@ public class GameManager : MonoBehaviour
     {
         Points = 0;
         gameState = GameState.InGame;
-        OnGameStateUpdate?.Invoke(gameState);
+        OnGameStateUpdated?.Invoke(gameState);
         currentTimeToMatch = 0f;
     }
 

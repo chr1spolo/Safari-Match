@@ -2,28 +2,43 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using System;
 
 public class UIPoints : MonoBehaviour
 {
     int displayedPoints = 0;
-
     public TextMeshProUGUI pointsLabel;
 
     // Start is called before the first frame update
     void Start()
     {
-        GameManager.Instace.OnPointsUpdate.AddListener(UpdatePoints);
+        GameManager.Instance.OnPointsUpdated.AddListener(UpdatePoints);
+        GameManager.Instance.OnGameStateUpdated.AddListener(GameStateUpdated);
     }
 
-    // Update is called once per frame
+    private void OnDestroy()
+    {
+        GameManager.Instance.OnPointsUpdated.RemoveListener(UpdatePoints);
+        GameManager.Instance.OnGameStateUpdated.RemoveListener(GameStateUpdated);
+    }
+
+    private void GameStateUpdated(GameManager.GameState newState)
+    {
+        if (newState == GameManager.GameState.GameOver)
+        {
+            displayedPoints = 0;
+            pointsLabel.text = displayedPoints.ToString();
+        }
+    }
+
     void UpdatePoints()
     {
-        StartCoroutine(UpdatePointsCorroutine());
+        StartCoroutine(UpdatePointsCoroutine());
     }
 
-    IEnumerator UpdatePointsCorroutine()
+    IEnumerator UpdatePointsCoroutine()
     {
-        while (displayedPoints < GameManager.Instace.Points)
+        while (displayedPoints < GameManager.Instance.Points)
         {
             displayedPoints++;
             pointsLabel.text = displayedPoints.ToString();

@@ -1,8 +1,8 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
+using TMPro;
+using System;
 
 public class UIGameOver : MonoBehaviour
 {
@@ -13,7 +13,12 @@ public class UIGameOver : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        GameManager.Instace.OnGameStateUpdate.AddListener(GameStateUpdated);
+        GameManager.Instance.OnGameStateUpdated.AddListener(GameStateUpdated);
+    }
+
+    private void OnDestroy()
+    {
+        GameManager.Instance.OnGameStateUpdated.RemoveListener(GameStateUpdated);
     }
 
     private void GameStateUpdated(GameManager.GameState newState)
@@ -21,20 +26,20 @@ public class UIGameOver : MonoBehaviour
         if (newState == GameManager.GameState.GameOver)
         {
             displayedPoints = 0;
-            StartCoroutine(DisplayedPointsCoroutine());
+            StartCoroutine(DisplayPointsCoroutine());
         }
     }
 
-    IEnumerator DisplayedPointsCoroutine()
+    IEnumerator DisplayPointsCoroutine()
     {
-        while (displayedPoints < GameManager.Instace.Points)
+        while (displayedPoints < GameManager.Instance.Points)
         {
             displayedPoints++;
             pointsUI.text = displayedPoints.ToString();
             yield return new WaitForFixedUpdate();
         }
 
-        displayedPoints = GameManager.Instace.Points;
+        displayedPoints = GameManager.Instance.Points;
         pointsUI.text = displayedPoints.ToString();
 
         yield return null;
@@ -42,12 +47,12 @@ public class UIGameOver : MonoBehaviour
 
     public void PlayAgainBtnClicked()
     {
-        GameManager.Instace.RestartGame();
+        GameManager.Instance.RestartGame();
     }
-
 
     public void ExitGameBtnClicked()
     {
-        GameManager.Instace.ExitGame();
+        GameManager.Instance.ExitGame();
     }
+
 }
