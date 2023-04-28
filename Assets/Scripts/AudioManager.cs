@@ -41,12 +41,12 @@ public class AudioManager : MonoBehaviour
 
     private void GameStateUpdated(GameManager.GameState newState)
     {
-        if (newState == GameManager.GameState.GameOver)
+       if(newState == GameManager.GameState.GameOver)
         {
             SfxSource.PlayOneShot(gameOverSFX);
         }
 
-        if (newState == GameManager.GameState.InGame)
+       if(newState == GameManager.GameState.InGame)
         {
             SfxSource.PlayOneShot(matchSFX);
         }

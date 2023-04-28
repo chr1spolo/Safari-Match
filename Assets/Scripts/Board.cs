@@ -37,7 +37,7 @@ public class Board : MonoBehaviour
         SetupBoard();
         PositionCamera();
 
-        if (GameManager.Instance.gameState == GameManager.GameState.InGame)
+        if(GameManager.Instance.gameState == GameManager.GameState.InGame)
         {
             StartCoroutine(SetupPieces());
         }
@@ -51,12 +51,11 @@ public class Board : MonoBehaviour
 
     private void OnGameStateUpdated(GameManager.GameState newState)
     {
-        Debug.Log(newState);
-        if (newState == GameManager.GameState.InGame)
+        if(newState == GameManager.GameState.InGame)
         {
             StartCoroutine(SetupPieces());
         }
-        if (newState == GameManager.GameState.GameOver)
+        if(newState == GameManager.GameState.GameOver)
         {
             ClearAllPieces();
         }
@@ -94,16 +93,13 @@ public class Board : MonoBehaviour
     private void ClearPieceAt(int x, int y)
     {
         var pieceToClear = Pieces[x, y];
-        if (pieceToClear != null)
-        {
-            pieceToClear.DissapearPiece(true);
-        }
+        pieceToClear.Remove(true);
         Pieces[x, y] = null;
     }
 
     private void ClearAllPieces()
     {
-        for (int x = 0; x < width; x++)
+        for(int x = 0; x<width; x++)
         {
             for (int y = 0; y < height; y++)
             {
@@ -115,7 +111,7 @@ public class Board : MonoBehaviour
     private Piece CreatePieceAt(int x, int y)
     {
         var selectedPiece = availablePieces[UnityEngine.Random.Range(0, availablePieces.Length)];
-        var o = Instantiate(selectedPiece, new Vector3(x, y + 1, -5), Quaternion.identity);
+        var o = Instantiate(selectedPiece, new Vector3(x, y+1, -5), Quaternion.identity);
         o.transform.parent = transform;
         Pieces[x, y] = o.GetComponent<Piece>();
         Pieces[x, y].Setup(x, y, this);
@@ -153,7 +149,7 @@ public class Board : MonoBehaviour
 
     public void TileDown(Tile tile_)
     {
-        if (!swappingPieces && GameManager.Instance.gameState == GameManager.GameState.InGame)
+        if (!swappingPieces && GameManager.Instance.gameState==GameManager.GameState.InGame)
         {
             startTile = tile_;
         }
@@ -200,7 +196,7 @@ public class Board : MonoBehaviour
         var allMatches = startMatches.Union(endMatches).ToList();
 
 
-        if (allMatches.Count == 0)
+        if (allMatches.Count==0)
         {
             AudioManager.Instance.Miss();
             StarPiece.Move(startTile.x, startTile.y);
@@ -228,7 +224,7 @@ public class Board : MonoBehaviour
             ClearPieceAt(piece.x, piece.y);
         });
         List<int> columns = GetColumns(piecesToClear);
-        List<Piece> collapsedPieces = collapseColumns(columns, 0.3f);
+        List<Piece> collapsedPieces =  collapseColumns(columns, 0.3f);
         FindMatchsRecursively(collapsedPieces);
     }
 
@@ -287,17 +283,17 @@ public class Board : MonoBehaviour
         for (int i = 0; i < columns.Count; i++)
         {
             var column = columns[i];
-            for (int y = 0; y < height; y++)
+            for(int y = 0; y < height; y++)
             {
-                if (Pieces[column, y] == null)
+                if(Pieces[column, y] == null)
                 {
-                    for (int yplus = y + 1; yplus < height; yplus++)
+                    for(int yplus = y +1; yplus<height; yplus++)
                     {
                         if (Pieces[column, yplus] != null)
                         {
                             Pieces[column, yplus].Move(column, y);
                             Pieces[column, y] = Pieces[column, yplus];
-                            if (!movingPieces.Contains(Pieces[column, y]))
+                            if(!movingPieces.Contains(Pieces[column, y]))
                             {
                                 movingPieces.Add(Pieces[column, y]);
                             }

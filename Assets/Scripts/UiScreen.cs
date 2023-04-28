@@ -48,10 +48,10 @@ public class UIScreen : MonoBehaviour
         containerRect.anchoredPosition = Vector2.zero;
         containerCanvas.DOFade(0f, transitionTime * 0.5f);
         containerRect.DOAnchorPos(new Vector2(0, -100), transitionTime * 0.5f).onComplete = () =>
-        {
-            background.enabled = false;
-            containerRect.gameObject.SetActive(false);
-        };
+           {
+               background.enabled = false;
+               containerRect.gameObject.SetActive(false);
+           };
 
     }
 

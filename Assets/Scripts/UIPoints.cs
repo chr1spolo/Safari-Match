@@ -24,7 +24,7 @@ public class UIPoints : MonoBehaviour
 
     private void GameStateUpdated(GameManager.GameState newState)
     {
-        if (newState == GameManager.GameState.GameOver)
+        if(newState == GameManager.GameState.GameOver)
         {
             displayedPoints = 0;
             pointsLabel.text = displayedPoints.ToString();
