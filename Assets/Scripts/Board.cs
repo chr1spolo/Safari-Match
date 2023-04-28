@@ -93,7 +93,10 @@ public class Board : MonoBehaviour
     private void ClearPieceAt(int x, int y)
     {
         var pieceToClear = Pieces[x, y];
-        pieceToClear.Remove(true);
+        if (pieceToClear != null)
+        {
+            pieceToClear.Remove(true);
+        }
         Pieces[x, y] = null;
     }
 
@@ -169,7 +172,10 @@ public class Board : MonoBehaviour
         {
             if (startTile != null && endTile != null && IsCloseTo(startTile, endTile))
             {
-                StartCoroutine(SwapTiles());
+                if (Pieces[endTile.x, endTile.y] != null)
+                {
+                    StartCoroutine(SwapTiles());
+                }
             }
         }
     }
@@ -337,29 +343,33 @@ public class Board : MonoBehaviour
     {
         List<Piece> matches = new List<Piece>();
         Piece startPiece = Pieces[xpos, ypos];
-        matches.Add(startPiece);
 
-        int nextX;
-        int nextY;
-        int maxVal = width > height ? width : height;
-
-        for (int i = 1; i < maxVal; i++)
+        if (startPiece != null)
         {
-            nextX = xpos + ((int)direction.x * i);
-            nextY = ypos + ((int)direction.y * i);
-            if (nextX >= 0 && nextX < width && nextY >= 0 && nextY < height)
+            matches.Add(startPiece);
+            int nextX;
+            int nextY;
+            int maxVal = width > height ? width : height;
+
+            for (int i = 1; i < maxVal; i++)
             {
-                var nextPiece = Pieces[nextX, nextY];
-                if (nextPiece != null && nextPiece.pieceType == startPiece.pieceType)
+                nextX = xpos + ((int)direction.x * i);
+                nextY = ypos + ((int)direction.y * i);
+                if (nextX >= 0 && nextX < width && nextY >= 0 && nextY < height)
                 {
-                    matches.Add(nextPiece);
-                }
-                else
-                {
-                    break;
+                    var nextPiece = Pieces[nextX, nextY];
+                    if (nextPiece != null && nextPiece.pieceType == startPiece.pieceType)
+                    {
+                        matches.Add(nextPiece);
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
             }
         }
+
 
         if (matches.Count >= minPieces)
         {
@@ -400,7 +410,13 @@ public class Board : MonoBehaviour
 
     public void AwardPoints(List<Piece> allMatches)
     {
-        GameManager.Instance.AddPoints(allMatches.Count * PointsPerMatch);
+        int points = 0;
+        foreach (var piece in allMatches)
+        {
+            points += piece.valuePerMatch;
+        }
+
+        GameManager.Instance.AddPoints(points);
     }
 
 }

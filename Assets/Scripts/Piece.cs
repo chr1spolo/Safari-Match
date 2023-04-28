@@ -25,6 +25,8 @@ public class Piece : MonoBehaviour
     };
 
     public type pieceType;
+    public int valuePerMatch = 0;
+
 
     public void Setup(int x_, int y_, Board board_)
     {
@@ -34,6 +36,27 @@ public class Piece : MonoBehaviour
 
         transform.localScale = Vector3.one * 0.35f;
         transform.DOScale(Vector3.one, 0.35f);
+
+        if (
+            pieceType == type.elephant ||
+            pieceType == type.giraffe ||
+            pieceType == type.hippo
+        )
+        {
+            valuePerMatch = 1;
+        }
+        else if (
+            pieceType == type.monkey ||
+            pieceType == type.panda ||
+            pieceType == type.parrot
+        )
+        {
+            valuePerMatch = 2;
+        }
+        else
+        {
+            valuePerMatch = 3;
+        }
     }
 
     public void Move(int desX, int desY)
@@ -62,11 +85,5 @@ public class Piece : MonoBehaviour
         {
             Destroy(gameObject);
         }
-    }
-
-    [ContextMenu("Test Move")]
-    public void MoveTest()
-    {
-        Move(0, 0);
     }
 }
